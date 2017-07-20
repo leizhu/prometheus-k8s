@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: redis-exporter
+  name: redis-exporter
+spec:
+  selector:
+    app: redis-exporter
+  ports:
+  - name: exporter
+    protocol: TCP
+    port: 9121
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: redis-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-exporter
+  template:
+    metadata:
+      name: redis-exporter
+      labels:
+        app: redis-exporter
+    spec:
+      nodeSelector:
+        infra-service: "false"
+      containers:
+      - name: redis-exporter
+        image: 172.22.111.199:80/cloud/redis_exporter:1.0
+        env:
+        - name: "REDIS_ADDR"
+          value: "redis://redis-service:6379"
+        ports:
+        - name: exporter
+          containerPort: 9121
